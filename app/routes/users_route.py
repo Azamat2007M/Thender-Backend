@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
-from app.schemes.user_scheme import UserResponse, UserCreate, UserUpdate
+from app.schemas.user_schema import UserResponse, UserCreate, UserUpdate
 from app.crud import user as crud_user
 from typing import List
 
@@ -25,6 +25,18 @@ async def get_users(user_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/", response_model=UserResponse)
 async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
+    if await crud_user.get_user_by_email(db, user.email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email already exists"
+        )
+
+    if await crud_user.get_user_by_username(db, user.username):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this username already exists"
+        )
+
     return await crud_user.create_user(db, user)
 
 @router.patch("/{user_id}", response_model=UserResponse)
@@ -33,6 +45,14 @@ async def update_user(user_id: int, user_update_body: UserUpdate, db: AsyncSessi
 
     if not user_data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if user_update_body.email and user_update_body.email != user_data.email:
+        if await crud_user.get_user_by_email(db, user_update_body.email):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already taken")
+
+    if user_update_body.username and user_update_body.username != user_data.username:
+        if await crud_user.get_user_by_username(db, user_update_body.username):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken")
 
     return await crud_user.update_user(db, user_data, user_update_body)
 

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: fastapi_db
+    container_name: thender_db
     restart: always
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -16,7 +16,7 @@ services:
 
   web:
     build: .
-    container_name: fastapi_web
+    container_name: thender_web
     restart: always
     ports:
       - "8000:8000"
