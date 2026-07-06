@@ -43,7 +43,6 @@ class UserModel(Base):
         back_populates="liked_by_users"
     )
 
-# 1. Объявляем таблицу связей ПОСЛЕ класса и связываем с 'user.id'
 followers_table = Table(
     "followers",
     Base.metadata,

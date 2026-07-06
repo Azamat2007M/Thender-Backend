@@ -2,7 +2,6 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
 
-# Отдельная легкая схема для постов внутри профиля, чтобы избежать рекурсии
 class UserThendResponse(BaseModel):
     id: int
     content: str

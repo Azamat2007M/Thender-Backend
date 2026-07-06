@@ -9,17 +9,14 @@ from app.schemas.comment_schema import CommentCreate
 
 
 async def create_thend(db: AsyncSession, thend_data: ThendCreate, author_id: int) -> ThendModel:
-    # 1. Создаем объект поста
     new_thend = ThendModel(
         content=thend_data.content,
         author_id=author_id
     )
     db.add(new_thend)
 
-    # 2. Фиксируем в базе данных, чтобы сгенерировался id и created_at
     await db.commit()
 
-    # 3. Делаем чистый, изолированный запрос свежего поста сразу с автором
     stmt = (
         select(ThendModel)
         .options(selectinload(ThendModel.author))
@@ -66,7 +63,7 @@ async def toggle_like_thend(db: AsyncSession, thend_id: int, user_id: int) -> Th
             and_(thend_likes.c.user_id == user_id, thend_likes.c.thend_id == thend_id)
         )
         await db.execute(delete_stmt)
-        thend.likes_count = max(0, thend.likes_count - 1)  # Чтобы счетчик не ушел в минус
+        thend.likes_count = max(0, thend.likes_count - 1)
     else:
         insert_stmt = insert(thend_likes).values(user_id=user_id, thend_id=thend_id)
         await db.execute(insert_stmt)

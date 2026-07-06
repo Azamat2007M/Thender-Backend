@@ -19,7 +19,7 @@ class CommentResponse(BaseModel):
     updated_at: datetime
     thend_id: int
     author_id: int
-    author: CommentAuthorResponse  # Используем локальную схему
+    author: CommentAuthorResponse
 
     class Config:
         from_attributes = True

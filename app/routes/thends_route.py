@@ -92,7 +92,6 @@ async def read_global_thends_feed(
 ):
     stmt = (
         select(ThendModel)
-        # Добавляем selectinload для комментариев, чтобы узнать их количество без ошибок
         .options(
             selectinload(ThendModel.author),
             selectinload(ThendModel.liked_by_users),
@@ -172,13 +171,13 @@ async def read_my_liked_thends(
 ):
     stmt = (
         select(ThendModel)
-        .join(ThendModel.liked_by_users) # Присоединяем таблицу связей Many-to-Many
+        .join(ThendModel.liked_by_users)
         .options(
             selectinload(ThendModel.author),
             selectinload(ThendModel.liked_by_users),
             selectinload(ThendModel.comments)
         )
-        .where(UserModel.id == current_user.id) # Фильтруем посты, где есть лайк от текущего юзера
+        .where(UserModel.id == current_user.id)
         .order_by(ThendModel.created_at.desc())
     )
     result = await db.execute(stmt)
@@ -186,7 +185,7 @@ async def read_my_liked_thends(
 
     for thend in thends:
         thend.likes_count = len(thend.liked_by_users)
-        thend.is_liked = True # Раз они в этой вкладке, значит они точно лайкнуты пользователем
+        thend.is_liked = True
         thend.comments_count = len(thend.comments)
 
     return thends

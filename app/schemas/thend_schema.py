@@ -27,7 +27,6 @@ class ThendAuthorResponse(BaseModel):
         from_attributes = True
 
 
-# Базовый ответ для ленты, создания и лайков
 class ThendResponse(ThendBase):
     id: int
     likes_count: int
@@ -37,13 +36,11 @@ class ThendResponse(ThendBase):
     is_liked: bool = False
     author: ThendAuthorResponse
 
-    # ДОБАВИЛИ ПОЛЕ ДЛЯ СЧЕТЧИКА:
     comments_count: int = 0
 
     class Config:
         from_attributes = True
 
 
-# Детальный ответ (для страницы отдельного поста)
 class ThendDetailResponse(ThendResponse):
     comments: List[CommentResponse] = []

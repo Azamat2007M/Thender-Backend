@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.schemas.user_schema import UserResponse, UserCreate, UserUpdate
 from app.models.user import UserModel
-from app.models.thend import ThendModel, thend_likes  # <-- Импортируем таблицу лайков прямо отсюда
-from app.models.comment import CommentModel          # Проверь, чтобы этот импорт был правильным
+from app.models.thend import thend_likes
+from app.models.comment import CommentModel
 from app.crud import user as crud_user
 from app.routes.thends_route import get_current_user
 from sqlalchemy.orm import selectinload
@@ -54,7 +54,6 @@ async def get_current_user_profile(
             comments_res = await db.execute(comments_stmt)
             t.comments_count = comments_res.scalar()
 
-            # НАДЁЖНАЯ ПРОВЕРКА ЛАЙКА: Считаем количество записей (должно быть 1 или 0)
             my_like_stmt = select(func.count()).where(
                 thend_likes.c.thend_id == t.id,
                 thend_likes.c.user_id == current_user.id
@@ -99,17 +98,14 @@ async def get_user_profile_with_posts(
 
     if db_user.thends:
         for t in db_user.thends:
-            # 1. Считаем лайки
             likes_query = select(func.count()).where(thend_likes.c.thend_id == t.id)
             likes_result = await db.execute(likes_query)
             t.likes_count = likes_result.scalar()
 
-            # 2. Считаем комменты
             comments_query = select(func.count()).where(CommentModel.thend_id == t.id)
             comments_result = await db.execute(comments_query)
             t.comments_count = comments_result.scalar()
 
-            # 3. НАДЁЖНАЯ ПРОВЕРКА ЛАЙКА: Через func.count()
             if current_user:
                 is_liked_query = select(func.count()).where(
                     thend_likes.c.thend_id == t.id,
