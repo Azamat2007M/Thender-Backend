@@ -4,6 +4,11 @@ from app.routes.users_route import router as user_router
 from app.routes.auth_route import router as auth_router
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
+from app.telegram_bot.support import router as telegram_router
+from app.routes.thends_route import router as thends_router
+from app.models.user import UserModel
+from app.models.thend import ThendModel
+from app.models.comment import CommentModel
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -40,3 +45,5 @@ async def root():
 
 app.include_router(user_router)
 app.include_router(auth_router)
+app.include_router(telegram_router)
+app.include_router(thends_router)

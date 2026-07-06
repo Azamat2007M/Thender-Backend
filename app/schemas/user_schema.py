@@ -18,20 +18,13 @@ class UserResponse(BaseModel):
     email: EmailStr
     is_active: bool
     created_at: datetime
+    updated_at: datetime # Добавили в схему ответа
 
     class Config:
         from_attributes = True
-        # orm_mode = True
 
-class UserUpdate(UserResponse):
-    username: Optional[str] = Field(
-        None,
-        min_length=4,
-        max_length=16
-    )
+class UserUpdate(BaseModel):
+    username: Optional[str] = Field(None, min_length=4, max_length=16)
     email: Optional[EmailStr] = None
-    password: Optional[str] = Field(
-        None,
-        min_length=8
-    )
+    password: Optional[str] = Field(None, min_length=8)
     is_active: Optional[bool] = None
