@@ -108,7 +108,6 @@ async def read_global_thends_feed(
         thend.likes_count = len(thend.liked_by_users)
         thend.is_liked = any(user.id == current_user.id for user in thend.liked_by_users) if current_user else False
 
-        # Считаем количество элементов в подгруженном массиве
         thend.comments_count = len(thend.comments)
 
     return thends

@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-
+from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from app.models.user import UserModel
 from app.schemas.user_schema import UserCreate
 from app.core.security import hash_password, verify_password
@@ -27,10 +28,27 @@ async def register_user(db: AsyncSession, user_data: UserCreate):
     await db.commit()
     await db.refresh(new_user)
 
+    new_user.thends = []
+    new_user.followers = []
+    new_user.following = []
+    new_user.followers_count = 0
+    new_user.following_count = 0
+    new_user.is_following = False
+
     return new_user
 
 async def authenticate_user(db: AsyncSession, email: str, password_to_check: str):
-    user_data = await crud_user.get_user_by_email(db, email)
+    query = (
+        select(UserModel)
+        .options(
+            selectinload(UserModel.thends),
+            selectinload(UserModel.followers),
+            selectinload(UserModel.following)
+        )
+        .where(UserModel.email == email)
+    )
+    result = await db.execute(query)
+    user_data = result.scalar_one_or_none()
 
     if user_data is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not available")
@@ -40,5 +58,15 @@ async def authenticate_user(db: AsyncSession, email: str, password_to_check: str
 
     if not user_data.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
+
+    user_data.followers_count = len(user_data.followers)
+    user_data.following_count = len(user_data.following)
+    user_data.is_following = False
+
+
+    if user_data.thends:
+        for t in user_data.thends:
+            t.likes_count = 0
+            t.comments_count = 0
 
     return user_data

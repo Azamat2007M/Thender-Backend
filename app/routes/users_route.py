@@ -44,12 +44,10 @@ async def get_current_user_profile(
 
     if user_with_relations.thends:
         for t in user_with_relations.thends:
-            # Считаем лайки
             likes_stmt = select(func.count()).where(thend_likes.c.thend_id == t.id)
             likes_res = await db.execute(likes_stmt)
             t.likes_count = likes_res.scalar()
 
-            # Считаем комментарии
             comments_stmt = select(func.count()).where(CommentModel.thend_id == t.id)
             comments_res = await db.execute(comments_stmt)
             t.comments_count = comments_res.scalar()
@@ -59,7 +57,7 @@ async def get_current_user_profile(
                 thend_likes.c.user_id == current_user.id
             )
             my_like_res = await db.execute(my_like_stmt)
-            t.is_liked = my_like_res.scalar() > 0  # True если > 0
+            t.is_liked = my_like_res.scalar() > 0  
 
     return user_with_relations
 
@@ -112,7 +110,7 @@ async def get_user_profile_with_posts(
                     thend_likes.c.user_id == current_user.id
                 )
                 is_liked_result = await db.execute(is_liked_query)
-                t.is_liked = is_liked_result.scalar() > 0  # True если > 0
+                t.is_liked = is_liked_result.scalar() > 0  
             else:
                 t.is_liked = False
 
@@ -151,10 +149,39 @@ async def follow_unfollow_user(
 
 
 @router.get("/{user_id}", response_model=UserResponse)
-async def get_users(user_id: int, db: AsyncSession = Depends(get_db)):
-    db_user = await crud_user.get_user_by_id(db, user_id)
+async def get_users(
+    user_id: int, 
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[UserModel] = Depends(get_current_user) 
+):
+    stmt = (
+        select(UserModel)
+        .options(
+            selectinload(UserModel.followers),
+            selectinload(UserModel.following),
+            selectinload(UserModel.thends)
+        )
+        .where(UserModel.id == user_id)
+    )
+    result = await db.execute(stmt)
+    db_user = result.scalar_one_or_none()
+    
     if not db_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        
+    db_user.followers_count = len(db_user.followers)
+    db_user.following_count = len(db_user.following)
+    
+    db_user.is_following = False
+    if current_user and current_user.id != db_user.id:
+        db_user.is_following = any(f.id == current_user.id for f in db_user.followers)
+        
+    if db_user.thends:
+        for t in db_user.thends:
+            t.likes_count = 0
+            t.comments_count = 0
+            t.is_liked = False
+
     return db_user
 
 

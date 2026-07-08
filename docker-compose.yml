@@ -13,6 +13,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    command: postgres -c shared_buffers=32MB -c max_connections=20
+    deploy:
+      resources:
+        limits:
+          cpus: '0.30'      
+          memory: 256M      
 
   web:
     build: .
@@ -24,6 +30,11 @@ services:
       - '.env'
     depends_on:
       - db
+    deploy:
+      resources:
+        limits:
+          cpus: '0.40'     
+          memory: 256M      
 
 volumes:
   postgres_data:
