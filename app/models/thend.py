@@ -1,8 +1,8 @@
-from sqlalchemy import ForeignKey, func, Table, Column, Integer
+from sqlalchemy import ForeignKey, func, Table, Column, Integer, String  
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 from datetime import datetime
-from typing import List, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.user import UserModel
@@ -21,6 +21,7 @@ class ThendModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     content: Mapped[str] = mapped_column(nullable=False)
+    image_url: Mapped[Optional[str]] = mapped_column(String, nullable=True, default=None)  
 
     likes_count: Mapped[int] = mapped_column(default=0, server_default="0", nullable=False)
     views_count: Mapped[int] = mapped_column(default=0, server_default="0", nullable=False)

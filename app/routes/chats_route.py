@@ -16,7 +16,6 @@ router = APIRouter(
     tags=["Chats"],
 )
 
-
 @router.post("/get-or-create", response_model=ChatResponse)
 async def get_or_create_chat(
         body: ChatCreateRequest,
@@ -39,7 +38,8 @@ async def get_or_create_chat(
         chat = ChatModel(user_one_id=current_user.id, user_two_id=body.recipient_id)
         db.add(chat)
         await db.commit()
-        await db.refresh(chat)
+        
+        await db.refresh(chat, attribute_names=["id", "user_one_id", "user_two_id", "created_at"])
         chat.messages = []  
 
     return chat
@@ -85,7 +85,11 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: str):
             if not text or not sender_id:
                 continue
 
-            async for db in get_db():
+            db_gen = get_db()
+            
+            try:
+                db = await db_gen.__anext__()
+                
                 new_message = MessageModel(chat_id=chat_id_int, sender_id=int(sender_id), text=text)
                 db.add(new_message)
                 await db.commit()
@@ -98,9 +102,9 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: str):
                     "text": text,
                     "created_at": new_message.created_at.isoformat()
                 }
-                
                 await manager.broadcast_to_chat(chat_id_int, broadcast_data)
-                break 
+            finally:
+                await db_gen.aclose()
 
     except WebSocketDisconnect:
         manager.disconnect(chat_id_int, websocket)

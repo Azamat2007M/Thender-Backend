@@ -1,17 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
-
-class UserThendResponse(BaseModel):
-    id: int
-    content: str
-    likes_count: int = 0
-    views_count: int = 0
-    comments_count: int = 0
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
+from app.schemas.thend_schema import ThendResponse
 
 class UserCreate(BaseModel):
     username: str = Field(
@@ -33,7 +23,7 @@ class UserResponse(BaseModel):
     followers_count: int | None = 0
     following_count: int | None = 0
     is_following: bool = False
-    thends: List[UserThendResponse] = []
+    thends: List[ThendResponse] = []
 
     class Config:
         from_attributes = True

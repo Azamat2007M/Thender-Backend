@@ -1,36 +1,42 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from app.models.comment import CommentModel
 from app.models.thend import ThendModel, thend_likes
 from app.schemas.thend_schema import ThendCreate
-from sqlalchemy import insert, delete, and_
+from sqlalchemy import insert, delete, and_, func
 from app.schemas.comment_schema import CommentCreate
 
 
-async def create_thend(db: AsyncSession, thend_data: ThendCreate, author_id: int) -> ThendModel:
+async def create_thend(db: AsyncSession, content: str, author_id: int, image_url: Optional[str] = None) -> ThendModel:
     new_thend = ThendModel(
-        content=thend_data.content,
-        author_id=author_id
+        content=content,
+        author_id=author_id,
+        image_url=image_url
     )
     db.add(new_thend)
-
     await db.commit()
+    await db.refresh(new_thend)
+    return new_thend
 
-    stmt = (
-        select(ThendModel)
-        .options(selectinload(ThendModel.author))
-        .where(ThendModel.id == new_thend.id)
+
+async def get_all_thends(db: AsyncSession, skip: int = 0, limit: int = 7):
+    likes_subquery = (
+        select(thend_likes.c.thend_id, func.count(thend_likes.c.user_id).label("total_likes"))
+        .group_by(thend_likes.c.thend_id)
+        .subquery()
     )
-    result = await db.execute(stmt)
-    return result.scalar_one()
 
-
-async def get_all_thends(db: AsyncSession, skip: int = 0, limit: int = 20):
     stmt = (
         select(ThendModel)
+        .outerjoin(likes_subquery, ThendModel.id == likes_subquery.c.thend_id)
         .options(selectinload(ThendModel.author))
-        .order_by(ThendModel.created_at.desc())
+        .order_by(
+            func.coalesce(likes_subquery.c.total_likes, 0).desc(),
+            ThendModel.created_at.desc(),
+            func.random()
+        )
         .offset(skip)
         .limit(limit)
     )
@@ -41,7 +47,11 @@ async def get_thend_by_id(db: AsyncSession, thend_id: int) -> ThendModel | None:
     stmt = (
         select(ThendModel)
         .where(ThendModel.id == thend_id)
-        .options(selectinload(ThendModel.author), selectinload(ThendModel.liked_by_users), selectinload(ThendModel.comments).selectinload(CommentModel.author))
+        .options(
+            selectinload(ThendModel.author), 
+            selectinload(ThendModel.liked_by_users), 
+            selectinload(ThendModel.comments).selectinload(CommentModel.author)
+        )
     )
     result = await db.execute(stmt)
     return result.scalar_one_or_none()
