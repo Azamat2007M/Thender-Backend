@@ -37,8 +37,8 @@ async def login_user(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,
-        samesite="lax",
+        secure=True,
+        samesite="none",
         max_age=60 * 24 * 60
     )
 
@@ -96,7 +96,7 @@ async def google_auth(
         value=access_token,
         httponly=True,
         secure=True,  
-        samesite="lax",
+        samesite="none",
         max_age=60 * 24 * 60
     )
 
