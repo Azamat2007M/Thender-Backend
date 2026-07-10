@@ -1,4 +1,4 @@
-name: FastAPI CI Pipeline
+name: FastAPI CI/CD Pipeline
 
 on:
   push:
@@ -28,6 +28,7 @@ jobs:
       run: |
         uv pip install --system -r pyproject.toml
 
-    - name: Lint code with Ruff (optional but useful)
+     Bond- name: Trigger Deploy to Render
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
-        python -m pip --version
+        curl -X POST "${{ secrets.RENDER_DEPLOY_WEBHOOK }}"
