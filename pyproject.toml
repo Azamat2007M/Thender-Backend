@@ -17,4 +17,6 @@ dependencies = [
     "uvicorn>=0.50.0",
     "websockets>=16.0",
     "cloudinary>=1.39.0",
+    "google-auth>=2.55.2",
+    "requests>=2.34.2",
 ]

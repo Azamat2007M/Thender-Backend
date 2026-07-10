@@ -12,3 +12,7 @@ class TokenData(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+    captcha_token: str
+
+class GoogleAuthRequest(BaseModel):
+    token: str

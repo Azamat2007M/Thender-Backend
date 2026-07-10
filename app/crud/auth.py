@@ -28,13 +28,6 @@ async def register_user(db: AsyncSession, user_data: UserCreate):
     await db.commit()
     await db.refresh(new_user)
 
-    new_user.thends = []
-    new_user.followers = []
-    new_user.following = []
-    new_user.followers_count = 0
-    new_user.following_count = 0
-    new_user.is_following = False
-
     return new_user
 
 async def authenticate_user(db: AsyncSession, email: str, password_to_check: str):

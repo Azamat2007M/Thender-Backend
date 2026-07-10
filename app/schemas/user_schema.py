@@ -12,6 +12,17 @@ class UserCreate(BaseModel):
     )
     email: EmailStr = Field(..., description="The email address must be provided!")
     password: str = Field(..., min_length=8, description="The password must be more than 8 characters long!")
+    captcha_token: str = Field(..., description="The CAPTCHA token must be provided!")
+
+class UserRegisterResponse(BaseModel):
+    id: int
+    username: str
+    email: EmailStr
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 class UserResponse(BaseModel):
     id: int
@@ -30,6 +41,6 @@ class UserResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     username: Optional[str] = Field(None, min_length=4, max_length=16)
-    email: Optional[EmailStr] = None
+    email: Optional[None] = None 
     password: Optional[str] = Field(None, min_length=8)
     is_active: Optional[bool] = None
