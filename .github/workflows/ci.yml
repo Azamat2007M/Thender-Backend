@@ -1,4 +1,4 @@
-name: FastAPI CI/CD Pipeline
+name: Thender CI/CD Pipeline
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
       run: |
         uv pip install --system -r pyproject.toml
 
-     Bond- name: Trigger Deploy to Render
+    - name: Trigger Deploy to Render
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         curl -X POST "${{ secrets.RENDER_DEPLOY_WEBHOOK }}"
