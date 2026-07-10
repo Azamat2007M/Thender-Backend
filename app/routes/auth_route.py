@@ -18,9 +18,27 @@ router = APIRouter(
 )
 
 @router.post("/register", response_model=UserRegisterResponse, status_code=status.HTTP_201_CREATED)
-async def registration_user(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
+async def registration_user(
+    user_in: UserCreate, 
+    response: Response,
+    db: AsyncSession = Depends(get_db)
+):
     await verify_turnstile(user_in.captcha_token)
-    return await auth.register_user(db, user_in)
+    
+    new_user = await auth.register_user(db, user_in)
+    
+    access_token = create_access_token(data={"sub": new_user.email})
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=60 * 24 * 60
+    )
+    
+    return new_user
 
 
 @router.post("/login", response_model=Token, status_code=status.HTTP_200_OK)
