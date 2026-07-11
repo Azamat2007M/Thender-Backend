@@ -136,3 +136,16 @@ async def google_auth(
             "is_active": user.is_active
         }
     }
+
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout_user(response: Response):
+    response.set_cookie(
+        key="access_token",
+        value="",
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=0 
+    )
+    return {"detail": "Successfully logged out"}
