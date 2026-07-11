@@ -11,11 +11,21 @@ from app.core.security import create_access_token, hash_password, verify_turnsti
 from app.config import settings
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
+from app.routes.thends_route import get_current_user
 
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"],
 )
+
+@router.get("/me", status_code=status.HTTP_200_OK)
+async def verify_user_session(current_user: UserModel = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "is_active": current_user.is_active
+    }
 
 @router.post("/register", response_model=UserRegisterResponse, status_code=status.HTTP_201_CREATED)
 async def registration_user(
