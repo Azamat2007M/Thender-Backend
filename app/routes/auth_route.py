@@ -35,6 +35,7 @@ async def registration_user(
         httponly=True,
         secure=True,
         samesite="none",
+        domain=".onrender.com",
         max_age=60 * 24 * 60
     )
     
@@ -57,6 +58,7 @@ async def login_user(
         httponly=True,
         secure=True,
         samesite="none",
+        domain=".onrender.com",
         max_age=60 * 24 * 60
     )
 
@@ -113,8 +115,9 @@ async def google_auth(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,  
+        secure=True,
         samesite="none",
+        domain=".onrender.com",
         max_age=60 * 24 * 60
     )
 
