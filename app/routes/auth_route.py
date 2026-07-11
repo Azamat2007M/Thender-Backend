@@ -26,7 +26,6 @@ async def registration_user(
     await verify_turnstile(user_in.captcha_token)
     
     new_user = await auth.register_user(db, user_in)
-    
     access_token = create_access_token(data={"sub": new_user.email})
 
     response.set_cookie(
@@ -34,8 +33,7 @@ async def registration_user(
         value=access_token,
         httponly=True,
         secure=True,
-        samesite="none",
-        domain=".onrender.com",
+        samesite="none",  
         max_age=60 * 24 * 60
     )
     
@@ -58,7 +56,6 @@ async def login_user(
         httponly=True,
         secure=True,
         samesite="none",
-        domain=".onrender.com",
         max_age=60 * 24 * 60
     )
 
@@ -80,7 +77,6 @@ async def google_auth(
             google_requests.Request(), 
             settings.GOOGLE_CLIENT_ID 
         )
-        
         email = id_info.get("email")
         username = id_info.get("name")
         
@@ -115,9 +111,8 @@ async def google_auth(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
+        secure=True,  
         samesite="none",
-        domain=".onrender.com",
         max_age=60 * 24 * 60
     )
 

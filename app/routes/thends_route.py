@@ -1,7 +1,7 @@
 import jwt
 import cloudinary
 import cloudinary.uploader
-from fastapi import APIRouter, Depends, HTTPException, status, Cookie, UploadFile, File, Form, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Cookie, UploadFile, File, Form, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select, func, or_
@@ -28,13 +28,16 @@ router = APIRouter(
 )
 
 async def get_current_user(
-        access_token: Optional[str] = Cookie(None), 
-        db: AsyncSession = Depends(get_db)
+    request: Request, 
+    db: AsyncSession = Depends(get_db)
 ) -> UserModel:
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
     )
+
+    access_token = request.cookies.get("access_token")
 
     if not access_token:
         raise HTTPException(
